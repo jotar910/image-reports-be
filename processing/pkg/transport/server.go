@@ -5,8 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"image-reports/users/pkg/endpoint"
-	"image-reports/users/pkg/service"
+	"image-reports/processing/pkg/service"
 
 	"image-reports/helpers/services/server"
 
@@ -22,7 +21,7 @@ func NewServerConfiguration() server.ServerConfiguration[service.Service] {
 
 func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 	srv := &http.Server{
-		Addr:    ":8081",
+		Addr:    ":8083",
 		Handler: router,
 	}
 
@@ -42,7 +41,7 @@ func (s *serverConfiguration) InitUserService() service.Service {
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 	router := gin.Default()
 
-	root := router.Group("/v1")
+	root := router.Group("/v1/processing")
 
 	// Health check
 	root.GET("/ping", func(c *gin.Context) {
@@ -50,8 +49,6 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 			"message": "pong",
 		})
 	})
-
-	root.POST("/auth", endpoint.CheckCredentials(svc))
 
 	return router
 }

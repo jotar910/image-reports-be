@@ -23,7 +23,7 @@ func NewServerConfiguration() server.ServerConfiguration[service.Service] {
 
 func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 	srv := &http.Server{
-		Addr:    ":8081",
+		Addr:    ":8080",
 		Handler: router,
 	}
 
