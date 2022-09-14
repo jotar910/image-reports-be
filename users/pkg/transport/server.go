@@ -13,25 +13,20 @@ import (
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type serverConfiguration struct {
 	server.ServerConfigurationHooks[service.Service]
+	db     *gorm.DB
 	config *configs.AppConfig
 }
 
-func NewServerConfiguration() server.ServerConfiguration[service.Service] {
-	return &serverConfiguration{}
-}
-
-func (s *serverConfiguration) BeforeInit() {
-	if _, err := configs.Initialize("users"); err != nil {
-		log.Fatalf("config: %s", err)
+func NewServerConfiguration(db *gorm.DB, config *configs.AppConfig) server.ServerConfiguration[service.Service] {
+	return &serverConfiguration{
+		db:     db,
+		config: config,
 	}
-	s.config = configs.Get()
-	log.Infof("Starting with config: %+v", s.config)
-
-	gin.SetMode(s.config.Gin.Mode)
 }
 
 func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
@@ -52,7 +47,7 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 }
 
 func (s *serverConfiguration) InitUserService() service.Service {
-	return service.NewService()
+	return service.NewService(s.db)
 }
 
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {

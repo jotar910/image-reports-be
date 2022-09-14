@@ -23,18 +23,10 @@ type serverConfiguration struct {
 	config *configs.AppConfig
 }
 
-func NewServerConfiguration() server.ServerConfiguration[service.Service] {
-	return &serverConfiguration{}
-}
-
-func (s *serverConfiguration) BeforeInit() {
-	if _, err := configs.Initialize("users"); err != nil {
-		log.Fatalf("config: %s", err)
+func NewServerConfiguration(config *configs.AppConfig) server.ServerConfiguration[service.Service] {
+	return &serverConfiguration{
+		config: config,
 	}
-	s.config = configs.Get()
-	log.Infof("Starting with config: %+v", s.config)
-
-	gin.SetMode(s.config.Gin.Mode)
 }
 
 func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {

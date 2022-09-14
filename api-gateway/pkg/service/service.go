@@ -28,7 +28,7 @@ func (svc service) Login(ctx context.Context, credentials shared_dtos.UserCreden
 		return nil, err
 	}
 
-	tokenString, err := auth.GenerateJWT(usr.Id, usr.Email)
+	tokenString, err := auth.GenerateJWT(usr.Id, usr.Email, usr.Role)
 	if err != nil {
 		return nil, err
 	}

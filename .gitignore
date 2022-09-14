@@ -19,7 +19,8 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 tmp/
-./**/tmp/
+**/tmp/
+db-data
 
 # Go workspace file
 go.work

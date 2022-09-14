@@ -15,6 +15,7 @@ func Login(svc service.Service) gin.HandlerFunc {
 		var credentials shared_dtos.UserCredentials
 		if err := c.BindJSON(&credentials); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 		resp, err := svc.Login(c, credentials)
 		if err != nil {

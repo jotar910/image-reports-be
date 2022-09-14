@@ -7,7 +7,8 @@ import (
 
 func MapToUserDTO(user *models.Users) shared_dtos.UserResponse {
 	return shared_dtos.UserResponse{
-		Id:    user.Id,
+		Id:    user.ID,
 		Email: user.Email,
+		Role:  user.Role.Name,
 	}
 }

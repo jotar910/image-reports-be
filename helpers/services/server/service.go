@@ -49,9 +49,6 @@ func NewServer[TService any](config ServerConfiguration[TService]) Server {
 }
 
 func (s *serverTemplate[TService]) Run() {
-	// Initialize global services
-	log.Initialize()
-
 	s.BeforeInit()
 	svc := s.InitUserService()
 	router := s.InitApiRoutes(svc)

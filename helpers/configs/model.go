@@ -1,5 +1,13 @@
 package configs
 
+type DatabaseConfig struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Database string
+}
+
 type GlobalConfig struct {
 	Gin      ginConfig
 	Services serviceListConfig

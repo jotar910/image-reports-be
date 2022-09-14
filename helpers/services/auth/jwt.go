@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	shared_models "image-reports/shared/models"
+
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -11,19 +13,21 @@ import (
 var jwtKey = []byte("my-secret-key") // TODO: replace with a more secure approach.
 
 type JWTClaim struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
 	jwt.StandardClaims
+	Id    uint                    `json:"id"`
+	Email string                  `json:"email"`
+	Role  shared_models.RolesEnum `json:"role"`
 }
 
-func GenerateJWT(id int, email string) (tokenString string, err error) {
+func GenerateJWT(id uint, email string, role shared_models.RolesEnum) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
-		Id:    id,
-		Email: email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
+		Id:    id,
+		Email: email,
+		Role:  role,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString(jwtKey)
@@ -59,6 +63,6 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func PasswordsMatch(a string, b string) error {
-	return bcrypt.CompareHashAndPassword([]byte(a), []byte(b))
+func PasswordsMatch(hashedPassword string, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
