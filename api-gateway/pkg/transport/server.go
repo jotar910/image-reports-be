@@ -2,13 +2,13 @@ package transport
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"image-reports/api-gateway/pkg/endpoint"
 	"image-reports/api-gateway/pkg/service"
 
 	users_client "image-reports/helpers/services/http-client/users"
+	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,7 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Printf("listen: %s\n", err)
+			log.Errorf("listen: %s\n", err)
 		}
 	}()
 

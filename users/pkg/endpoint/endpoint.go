@@ -20,7 +20,6 @@ func CheckCredentials(svc service.Service) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 		usr, err := svc.CheckCredentials(c, credentials)
-		println(usr)
 		if err == nil {
 			c.JSON(http.StatusOK, mappers.MapToUserDTO(usr))
 			return

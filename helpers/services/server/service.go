@@ -3,11 +3,12 @@ package server
 import (
 	"context"
 	"image-reports/helpers/services/kafka"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	log "image-reports/helpers/services/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,6 +34,9 @@ func NewServer[TService any](config ServerConfiguration[TService]) Server {
 }
 
 func (s *serverTemplate[TService]) Run() {
+	// Initialize logger
+	log.Initialize()
+
 	svc := s.InitUserService()
 	router := s.InitApiRoutes(svc)
 	s.srv = s.InitApiServer(router)
@@ -42,7 +46,7 @@ func (s *serverTemplate[TService]) Run() {
 	signal.Notify(signc, os.Interrupt)
 
 	sign := <-signc
-	log.Println("Receive terminate, grateful shutdown", sign)
+	log.Infof("Receive terminate, grateful shutdown", sign)
 
 	// Set a timeout to end the server gracefully.
 	tc, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -56,6 +60,6 @@ func (s *serverTemplate[TService]) Run() {
 func (s *serverTemplate[TService]) Shutdown(ctx context.Context) {
 	kafka.Shutdown()
 	if err := s.srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		log.Fatalf("Server forced to shutdown:", err)
 	}
 }

@@ -2,8 +2,8 @@ package kafka
 
 import (
 	"context"
-	"fmt"
-	"log"
+
+	log "image-reports/helpers/services/logger"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -81,7 +81,7 @@ func (r *kafkaReader) Close() error {
 func Shutdown() {
 	for _, writer := range writers {
 		if err := writer.Close(); err != nil {
-			log.Println(fmt.Errorf("closing topic %s: %w", writer.writer.Topic, err))
+			log.Errorf("closing topic %s: %w", writer.writer.Topic, err)
 		}
 	}
 }

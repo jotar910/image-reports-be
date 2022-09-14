@@ -3,15 +3,14 @@ package transport
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"image-reports/reporter/pkg/endpoint"
 	"image-reports/reporter/pkg/service"
 
 	"image-reports/helpers/services/kafka"
+	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +31,7 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Printf("listen: %s\n", err)
+			log.Errorf("listen: %s\n", err)
 		}
 	}()
 
@@ -71,12 +70,12 @@ func (s *serverConfiguration) initKafkaListeners() {
 				if err == io.EOF {
 					break
 				}
-				log.Println(fmt.Errorf("could not read message on image processed: %w", err))
+				log.Errorf("could not read message on image processed: %v", err)
 				continue
 			}
 
 			if err := endpoint.OnImageProcessedMessage(ctx, req); err != nil {
-				log.Println(fmt.Errorf("could not handle message on image processed: %w", err))
+				log.Errorf("could not handle message on image processed: %v", err)
 			}
 		}
 	}()
@@ -91,12 +90,12 @@ func (s *serverConfiguration) initKafkaListeners() {
 				if err == io.EOF {
 					break
 				}
-				log.Println(fmt.Errorf("could not read message on image processed: %w", err))
+				log.Errorf("could not read message on image processed: %v", err)
 				continue
 			}
 
 			if err := endpoint.OnImageStoredMessage(ctx, req); err != nil {
-				log.Println(fmt.Errorf("could not handle message on image processed: %w", err))
+				log.Errorf("could not handle message on image processed: %v", err)
 			}
 		}
 	}()

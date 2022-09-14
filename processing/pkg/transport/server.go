@@ -3,15 +3,14 @@ package transport
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"image-reports/processing/pkg/endpoint"
 	"image-reports/processing/pkg/service"
 
 	"image-reports/helpers/services/kafka"
+	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +31,7 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Printf("listen: %s\n", err)
+			log.Errorf("listen: %s\n", err)
 		}
 	}()
 
@@ -72,18 +71,18 @@ func (s *serverConfiguration) initKafkaListeners() {
 				if err == io.EOF {
 					break
 				}
-				log.Println(fmt.Errorf("could not read message on report created: %w", err))
+				log.Errorf("could not read message on report created: %w", err)
 				continue
 			}
 
 			res, err := endpoint.OnReportCreatedMessage(ctx, req)
 			if err != nil {
-				log.Println(fmt.Errorf("could not handle message on report created: %w", err))
+				log.Errorf("could not handle message on report created: %w", err)
 				continue
 			}
 
 			if err := w.Write(ctx, res); err != nil {
-				log.Println(fmt.Errorf("could not write message on report created: %w", err))
+				log.Errorf("could not write message on report created: %w", err)
 			}
 		}
 	}()
@@ -98,12 +97,12 @@ func (s *serverConfiguration) initKafkaListeners() {
 				if err == io.EOF {
 					break
 				}
-				log.Println(fmt.Errorf("could not read message on report deleted: %w", err))
+				log.Errorf("could not read message on report deleted: %w", err)
 				continue
 			}
 
 			if err := endpoint.OnReportDeletedMessage(ctx, req); err != nil {
-				log.Println(fmt.Errorf("could not handle message on report deleted: %w", err))
+				log.Errorf("could not handle message on report deleted: %w", err)
 			}
 		}
 	}()
