@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"image-reports/users/configs"
-	"image-reports/users/models"
+	"image-reports/reporter/configs"
+	"image-reports/reporter/models"
 
-	"image-reports/helpers/services/auth"
 	log "image-reports/helpers/services/logger"
 
 	shared_models "image-reports/shared/models"
@@ -22,7 +21,7 @@ func main() {
 	log.Initialize()
 
 	// Initialize Configs
-	config, err := configs.Initialize("users")
+	config, err := configs.Initialize("reporter")
 	if err != nil {
 		log.Fatalf("config: %s", err)
 	}
@@ -50,7 +49,7 @@ func main() {
 	flags.BoolP("keep-state", "k", false, "keep database old state")
 
 	migrator := db.Migrator()
-	tables := []any{&models.Roles{}, &models.Users{}}
+	tables := []any{&models.Reports{}, &models.Approvals{}}
 	log.Info("Running GORM seed...")
 
 	// Auto migrate.
@@ -81,50 +80,65 @@ func main() {
 
 	log.Info("Adding records...")
 
-	// Add users to database.
-	roles := []models.Roles{
-		{Name: shared_models.AdminRole},
-		{Name: shared_models.UserRole},
+	// Add reports to database.
+	reports := []models.Reports{
+		{
+			Name:    "Report #1",
+			UserID:  1,
+			ImageID: "image-1-uuid",
+			Status:  shared_models.ReportStatusPublished,
+			Approval: models.Approvals{
+				UserID: 1,
+				Status: shared_models.ApprovalStatusApproval,
+			},
+		},
+		{
+			Name:    "Report #2",
+			UserID:  1,
+			ImageID: "image-2-uuid",
+			Status:  shared_models.ReportStatusPublished,
+			Approval: models.Approvals{
+				UserID: 1,
+				Status: shared_models.ApprovalStatusRejected,
+			},
+		},
+		{
+			Name:    "Report #3",
+			UserID:  2,
+			ImageID: "image-3-uuid",
+			Status:  shared_models.ReportStatusNew,
+		},
+		{
+			Name:    "Report #4",
+			UserID:  3,
+			ImageID: "image-4-uuid",
+			Status:  shared_models.ReportStatusEvaluating,
+		},
+		{
+			Name:    "Report #5",
+			UserID:  1,
+			ImageID: "image-5-uuid",
+			Status:  shared_models.ReportStatusError,
+		},
+		{
+			Name:    "Report #6",
+			UserID:  2,
+			ImageID: "image-6-uuid",
+			Status:  shared_models.ReportStatusPending,
+		},
+		{
+			Name:    "Report #7",
+			UserID:  3,
+			ImageID: "image-7-uuid",
+			Status:  shared_models.ReportStatusPending,
+		},
 	}
-	tx := db.Create(roles)
+	tx := db.Create(reports)
 	if tx.Error != nil {
-		log.Fatalf("failed to create roles: %s", err.Error)
+		log.Fatalf("failed to create reports: %s", err.Error)
 		os.Exit(1)
 	}
-	log.Infof("Created role records: %+v", roles)
-
-	// Add users to database.
-	// TODO: generate random passwords.
-	users := []models.Users{
-		{
-			Email:    "admin@email.com",
-			Password: "admin",
-			Role:     roles[0],
-		},
-		{
-			Email:    "user1@email.com",
-			Password: "user",
-			Role:     roles[1],
-		},
-		{
-			Email:    "user2@email.com",
-			Password: "user",
-			Role:     roles[1],
-		},
-	}
-	for i, user := range users {
-		encrypted, err := auth.HashPassword(user.Password)
-		if err != nil {
-			log.Fatalf("failed to encrypt password for user %s: %v", user.Email, err)
-		}
-		users[i].Password = encrypted
-	}
-	tx = db.Create(users)
-	if tx.Error != nil {
-		log.Fatalf("failed to create users: %s", err.Error)
-		os.Exit(1)
-	}
-	log.Infof("Created user records: %+v", users)
+	log.Infof("Created report records: %+v", reports)
 
 	os.Exit(0)
 }
