@@ -78,7 +78,7 @@ func (r *kafkaReader) Close() error {
 	return err
 }
 
-func Clear() {
+func Shutdown() {
 	for _, writer := range writers {
 		if err := writer.Close(); err != nil {
 			log.Println(fmt.Errorf("closing topic %s: %w", writer.writer.Topic, err))

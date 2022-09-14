@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"image-reports/helpers/services/kafka"
 	"log"
 	"net/http"
 	"os"
@@ -53,6 +54,7 @@ func (s *serverTemplate[TService]) Run() {
 }
 
 func (s *serverTemplate[TService]) Shutdown(ctx context.Context) {
+	kafka.Shutdown()
 	if err := s.srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown:", err)
 	}
