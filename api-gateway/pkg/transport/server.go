@@ -2,8 +2,10 @@ package transport
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	"image-reports/api-gateway/configs"
 	"image-reports/api-gateway/pkg/endpoint"
 	"image-reports/api-gateway/pkg/service"
 
@@ -15,21 +17,35 @@ import (
 )
 
 type serverConfiguration struct {
+	server.ServerConfigurationHooks[service.Service]
+	config *configs.AppConfig
 }
 
 func NewServerConfiguration() server.ServerConfiguration[service.Service] {
 	return &serverConfiguration{}
 }
 
+func (s *serverConfiguration) BeforeInit() {
+	if _, err := configs.Initialize("users"); err != nil {
+		log.Fatalf("config: %s", err)
+	}
+	s.config = configs.Get()
+	log.Infof("Starting with config: %+v", s.config)
+
+	gin.SetMode(s.config.Gin.Mode)
+}
+
 func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
+	addr := fmt.Sprintf("%s:%d", s.config.Services.ApiGateway.Host, s.config.Services.ApiGateway.Port)
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: router,
 	}
 
 	go func() {
+		log.Infof("Running server on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Errorf("listen: %s\n", err)
+			log.Fatalf("listen: %s", err)
 		}
 	}()
 
@@ -37,7 +53,7 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 }
 
 func (s *serverConfiguration) InitUserService() service.Service {
-	return service.NewService(users_client.NewHttpClient())
+	return service.NewService(users_client.NewHttpClient(s.config.GlobalConfig))
 }
 
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {

@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"image-reports/helpers/configs"
 	shared_dtos "image-reports/shared/dtos"
 )
 
@@ -14,10 +16,11 @@ type HttpClient interface {
 }
 
 type httpClient struct {
+	config configs.GlobalConfig
 }
 
-func NewHttpClient() HttpClient {
-	return &httpClient{}
+func NewHttpClient(config configs.GlobalConfig) HttpClient {
+	return &httpClient{config: config}
 }
 
 func (client *httpClient) CheckCredentials(credentials shared_dtos.UserCredentials) (shared_dtos.UserResponse, error) {
@@ -26,7 +29,9 @@ func (client *httpClient) CheckCredentials(credentials shared_dtos.UserCredentia
 		return shared_dtos.UserResponse{}, err
 	}
 
-	resp, err := http.Post("http://localhost:8080/v1/auth", "text/json", &buf)
+	host := client.config.Services.Users.Host
+	port := client.config.Services.Users.Port
+	resp, err := http.Post(fmt.Sprintf("http://%s:%d/v1/auth", host, port), "text/json", &buf)
 	if err != nil {
 		return shared_dtos.UserResponse{}, err
 	}

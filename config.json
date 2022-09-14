@@ -1,0 +1,31 @@
+{
+    "gin": {
+        "mode": "debug"
+    },
+    "services": {
+        "apiGateway": {
+            "host": "localhost",
+            "port": 8080
+        },
+        "users": {
+            "host": "localhost",
+            "port": 8081
+        },
+        "reporter": {
+            "host": "localhost",
+            "port": 8082
+        },
+        "processing": {
+            "host": "localhost",
+            "port": 8083
+        },
+        "storage": {
+            "host": "localhost",
+            "port": 8084
+        },
+        "realtime": {
+            "host": "localhost",
+            "port": 8085
+        }
+    }
+}
