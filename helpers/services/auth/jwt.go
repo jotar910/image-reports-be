@@ -7,6 +7,7 @@ import (
 	shared_models "image-reports/shared/models"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -65,4 +66,12 @@ func HashPassword(password string) (string, error) {
 
 func PasswordsMatch(hashedPassword string, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+func GetTokenClaim(c *gin.Context) (*JWTClaim, error) {
+	claim, ok := c.Get("user")
+	if !ok {
+		return nil, errors.New("unknown user")
+	}
+	return claim.(*JWTClaim), nil
 }

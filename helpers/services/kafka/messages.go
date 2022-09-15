@@ -3,7 +3,10 @@ package kafka
 import (
 	"bytes"
 	"encoding/gob"
+	"mime/multipart"
 	"strconv"
+
+	shared_models "image-reports/shared/models"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -14,9 +17,12 @@ type KafkaMessage interface {
 }
 
 type ReportCreatedMessage struct {
-	ReportId    int
+	ReportId    uint
 	ImageId     string
 	ReportImage []byte
+	ImageType   shared_models.ReportCreationType
+	ImageUrl    string
+	ImageFile   *multipart.FileHeader
 }
 
 func (m *ReportCreatedMessage) ToMessage() (Message, error) {
@@ -31,16 +37,24 @@ func NewEmptyReportCreatedMessage() *ReportCreatedMessage {
 	return &ReportCreatedMessage{}
 }
 
-func NewReportCreatedMessage(reportId int, imageId string, reportImage []byte) *ReportCreatedMessage {
+func NewReportCreatedMessage(
+	reportId uint,
+	imageId string,
+	reportImageType shared_models.ReportCreationType,
+	reportImageUrl string,
+	reportImageFile *multipart.FileHeader,
+) *ReportCreatedMessage {
 	return &ReportCreatedMessage{
-		ReportId:    reportId,
-		ImageId:     imageId,
-		ReportImage: reportImage,
+		ReportId:  reportId,
+		ImageId:   imageId,
+		ImageType: reportImageType,
+		ImageUrl:  reportImageUrl,
+		ImageFile: reportImageFile,
 	}
 }
 
 type ReportDeletedMessage struct {
-	ReportId int
+	ReportId uint
 	ImageId  string
 }
 
@@ -56,7 +70,7 @@ func NewEmptyDeletedReportMessage() *ReportDeletedMessage {
 	return &ReportDeletedMessage{}
 }
 
-func NewDeletedReportMessage(reportId int, imageId string) *ReportDeletedMessage {
+func NewDeletedReportMessage(reportId uint, imageId string) *ReportDeletedMessage {
 	return &ReportDeletedMessage{
 		ReportId: reportId,
 		ImageId:  imageId,
@@ -64,7 +78,7 @@ func NewDeletedReportMessage(reportId int, imageId string) *ReportDeletedMessage
 }
 
 type ImageProcessedMessage struct {
-	ReportId   int
+	ReportId   uint
 	ImageId    string
 	Grade      int
 	Categories []string
@@ -83,7 +97,7 @@ func NewEmptyImageProcessedMessage() *ImageProcessedMessage {
 	return &ImageProcessedMessage{}
 }
 
-func NewImageProcessedMessageCompleted(reportId int, imageId string, grade int, categories []string) *ImageProcessedMessage {
+func NewImageProcessedMessageCompleted(reportId uint, imageId string, grade int, categories []string) *ImageProcessedMessage {
 	return &ImageProcessedMessage{
 		ReportId:   reportId,
 		ImageId:    imageId,
@@ -92,7 +106,7 @@ func NewImageProcessedMessageCompleted(reportId int, imageId string, grade int, 
 	}
 }
 
-func NewImageProcessedMessageFailed(reportId int, imageId string, err error) *ImageProcessedMessage {
+func NewImageProcessedMessageFailed(reportId uint, imageId string, err error) *ImageProcessedMessage {
 	return &ImageProcessedMessage{
 		ReportId: reportId,
 		ImageId:  imageId,
@@ -101,7 +115,7 @@ func NewImageProcessedMessageFailed(reportId int, imageId string, err error) *Im
 }
 
 type ImageStoredMessage struct {
-	ReportId int
+	ReportId uint
 	ImageId  string
 	Err      error
 }
@@ -118,14 +132,14 @@ func NewEmptyImageStoredMessage() *ImageStoredMessage {
 	return &ImageStoredMessage{}
 }
 
-func NewImageStoredMessageCompleted(reportId int, imageId string) *ImageStoredMessage {
+func NewImageStoredMessageCompleted(reportId uint, imageId string) *ImageStoredMessage {
 	return &ImageStoredMessage{
 		ReportId: reportId,
 		ImageId:  imageId,
 	}
 }
 
-func NewImageStoredMessageFailed(reportId int, imageId string, err error) *ImageStoredMessage {
+func NewImageStoredMessageFailed(reportId uint, imageId string, err error) *ImageStoredMessage {
 	return &ImageStoredMessage{
 		ReportId: reportId,
 		ImageId:  imageId,
@@ -133,13 +147,13 @@ func NewImageStoredMessageFailed(reportId int, imageId string, err error) *Image
 	}
 }
 
-func toMessage(key int, m KafkaMessage) (Message, error) {
+func toMessage(key uint, m KafkaMessage) (Message, error) {
 	value, err := getBytes(m)
 	if err != nil {
 		return kafka.Message{}, err
 	}
 	return Message{
-		Key:   []byte(strconv.Itoa(key)),
+		Key:   []byte(strconv.Itoa(int(key))),
 		Value: value,
 	}, nil
 }

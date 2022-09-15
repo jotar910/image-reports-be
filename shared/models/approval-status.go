@@ -3,6 +3,6 @@ package models
 type ApprovalStatusEnum string
 
 var (
-	ApprovalStatusApproval ApprovalStatusEnum = "APPROVED"
+	ApprovalStatusApproved ApprovalStatusEnum = "APPROVED"
 	ApprovalStatusRejected ApprovalStatusEnum = "REJECTED"
 )

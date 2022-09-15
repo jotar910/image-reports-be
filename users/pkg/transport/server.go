@@ -17,7 +17,6 @@ import (
 )
 
 type serverConfiguration struct {
-	server.ServerConfigurationHooks[service.Service]
 	db     *gorm.DB
 	config *configs.AppConfig
 }

@@ -17,7 +17,6 @@ import (
 )
 
 type serverConfiguration struct {
-	server.ServerConfigurationHooks[service.Service]
 	config *configs.AppConfig
 }
 

@@ -19,24 +19,9 @@ type Server interface {
 }
 
 type ServerConfiguration[TService any] interface {
-	BeforeInit()
-	AfterInit()
 	InitApiServer(router *gin.Engine) *http.Server
 	InitUserService() TService
 	InitApiRoutes(svc TService) *gin.Engine
-}
-
-type ServerConfigurationHooks[TService any] struct {
-	ServerConfiguration[TService]
-	srv *http.Server
-}
-
-func (ServerConfigurationHooks[TService]) BeforeInit() {
-	// Empty by design.
-}
-
-func (ServerConfigurationHooks[TService]) AfterInit() {
-	// Empty by design.
 }
 
 type serverTemplate[TService any] struct {
@@ -49,11 +34,9 @@ func NewServer[TService any](config ServerConfiguration[TService]) Server {
 }
 
 func (s *serverTemplate[TService]) Run() {
-	s.BeforeInit()
 	svc := s.InitUserService()
 	router := s.InitApiRoutes(svc)
 	s.srv = s.InitApiServer(router)
-	s.AfterInit()
 
 	// Wait for a signal that ends the execution.
 	signc := make(chan os.Signal, 1)

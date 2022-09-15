@@ -8,6 +8,7 @@ import (
 	"image-reports/reporter/models"
 
 	log "image-reports/helpers/services/logger"
+	"image-reports/helpers/utils"
 
 	shared_models "image-reports/shared/models"
 
@@ -83,54 +84,65 @@ func main() {
 	// Add reports to database.
 	reports := []models.Reports{
 		{
-			Name:    "Report #1",
-			UserID:  1,
-			ImageID: "image-1-uuid",
-			Status:  shared_models.ReportStatusPublished,
+			Name:     "Report #1",
+			UserID:   1,
+			ImageID:  "image-1-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusPublished,
+			Grade:    utils.Pointer(80),
 			Approval: models.Approvals{
 				UserID: 1,
-				Status: shared_models.ApprovalStatusApproval,
+				Status: shared_models.ApprovalStatusApproved,
 			},
 		},
 		{
-			Name:    "Report #2",
-			UserID:  1,
-			ImageID: "image-2-uuid",
-			Status:  shared_models.ReportStatusPublished,
+			Name:     "Report #2",
+			UserID:   1,
+			ImageID:  "image-2-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusPublished,
+			Grade:    utils.Pointer(20),
 			Approval: models.Approvals{
 				UserID: 1,
 				Status: shared_models.ApprovalStatusRejected,
 			},
 		},
 		{
-			Name:    "Report #3",
-			UserID:  2,
-			ImageID: "image-3-uuid",
-			Status:  shared_models.ReportStatusNew,
+			Name:     "Report #3",
+			UserID:   2,
+			ImageID:  "image-3-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusNew,
 		},
 		{
-			Name:    "Report #4",
-			UserID:  3,
-			ImageID: "image-4-uuid",
-			Status:  shared_models.ReportStatusEvaluating,
+			Name:     "Report #4",
+			UserID:   3,
+			ImageID:  "image-4-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusEvaluating,
 		},
 		{
-			Name:    "Report #5",
-			UserID:  1,
-			ImageID: "image-5-uuid",
-			Status:  shared_models.ReportStatusError,
+			Name:     "Report #5",
+			UserID:   1,
+			ImageID:  "image-5-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusError,
 		},
 		{
-			Name:    "Report #6",
-			UserID:  2,
-			ImageID: "image-6-uuid",
-			Status:  shared_models.ReportStatusPending,
+			Name:     "Report #6",
+			UserID:   2,
+			ImageID:  "image-6-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusPending,
+			Grade:    utils.Pointer(50),
 		},
 		{
-			Name:    "Report #7",
-			UserID:  3,
-			ImageID: "image-7-uuid",
-			Status:  shared_models.ReportStatusPending,
+			Name:     "Report #7",
+			UserID:   3,
+			ImageID:  "image-7-uuid",
+			Callback: "https://google.com",
+			Status:   shared_models.ReportStatusPending,
+			Grade:    utils.Pointer(75),
 		},
 	}
 	tx := db.Create(reports)

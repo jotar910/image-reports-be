@@ -10,21 +10,25 @@ import (
 	"image-reports/reporter/configs"
 	"image-reports/reporter/pkg/endpoint"
 	"image-reports/reporter/pkg/service"
+	"image-reports/shared/models"
 
+	"image-reports/helpers/services/auth"
 	"image-reports/helpers/services/kafka"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type serverConfiguration struct {
-	server.ServerConfigurationHooks[service.Service]
+	db     *gorm.DB
 	config *configs.AppConfig
 }
 
-func NewServerConfiguration(config *configs.AppConfig) server.ServerConfiguration[service.Service] {
+func NewServerConfiguration(db *gorm.DB, config *configs.AppConfig) server.ServerConfiguration[service.Service] {
 	return &serverConfiguration{
+		db:     db,
 		config: config,
 	}
 }
@@ -43,13 +47,11 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 		}
 	}()
 
-	s.initKafkaListeners()
-
 	return srv
 }
 
 func (s *serverConfiguration) InitUserService() service.Service {
-	return service.NewService()
+	return service.NewService(s.db)
 }
 
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
@@ -64,10 +66,24 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 		})
 	})
 
+	reports := root.Group("/reports")
+
+	reports.Use(
+		server.JSONMiddleware(),
+		auth.Authentication(),
+	)
+
+	reports.GET("/", endpoint.ListReports(svc))
+	reports.GET("/:id", endpoint.GetReport(svc))
+	reports.POST("/", endpoint.CreateReport(svc))
+	reports.PATCH("/:id", auth.AllowOnlyRole(models.AdminRole), endpoint.ReportApproval(svc))
+
+	s.initKafkaListeners(svc)
+
 	return router
 }
 
-func (s *serverConfiguration) initKafkaListeners() {
+func (s *serverConfiguration) initKafkaListeners(svc service.Service) {
 	go func() {
 		r := kafka.Reader(kafka.TopicImageProcessed, kafka.TopicImageProcessedGroup)
 		req := kafka.NewEmptyImageProcessedMessage()
@@ -82,7 +98,7 @@ func (s *serverConfiguration) initKafkaListeners() {
 				continue
 			}
 
-			if err := endpoint.OnImageProcessedMessage(ctx, req); err != nil {
+			if err := endpoint.OnImageProcessedMessage(ctx, req, svc); err != nil {
 				log.Errorf("could not handle message on image processed: %v", err)
 			}
 		}
@@ -102,7 +118,7 @@ func (s *serverConfiguration) initKafkaListeners() {
 				continue
 			}
 
-			if err := endpoint.OnImageStoredMessage(ctx, req); err != nil {
+			if err := endpoint.OnImageStoredMessage(ctx, req, svc); err != nil {
 				log.Errorf("could not handle message on image processed: %v", err)
 			}
 		}
