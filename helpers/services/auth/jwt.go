@@ -21,7 +21,7 @@ type JWTClaim struct {
 }
 
 func GenerateJWT(id uint, email string, role shared_models.RolesEnum) (tokenString string, err error) {
-	expirationTime := time.Now().Add(1 * time.Hour)
+	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &JWTClaim{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),

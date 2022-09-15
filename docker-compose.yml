@@ -38,6 +38,24 @@ services:
       image-reports:
         ipv4_address: 10.7.2.3
 
+  evaluations_database:
+    image: postgres
+    restart: always
+    env_file:
+      - processing/docker.env
+    ports:
+      - 3432:5432
+    volumes:
+      - ./db-data/evaluations:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "evaluations"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      image-reports:
+        ipv4_address: 10.7.3.3
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     container_name: zookeeper

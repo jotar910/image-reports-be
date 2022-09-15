@@ -11,19 +11,23 @@ import (
 	"image-reports/processing/pkg/endpoint"
 	"image-reports/processing/pkg/service"
 
+	"image-reports/helpers/services/auth"
 	"image-reports/helpers/services/kafka"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type serverConfiguration struct {
+	db     *gorm.DB
 	config *configs.AppConfig
 }
 
-func NewServerConfiguration(config *configs.AppConfig) server.ServerConfiguration[service.Service] {
+func NewServerConfiguration(db *gorm.DB, config *configs.AppConfig) server.ServerConfiguration[service.Service] {
 	return &serverConfiguration{
+		db:     db,
 		config: config,
 	}
 }
@@ -42,13 +46,11 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 		}
 	}()
 
-	s.initKafkaListeners()
-
 	return srv
 }
 
 func (s *serverConfiguration) InitUserService() service.Service {
-	return service.NewService()
+	return service.NewService(s.db)
 }
 
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
@@ -63,53 +65,38 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 		})
 	})
 
+	evaluation := root.Group("/evaluations")
+
+	evaluation.Use(
+		server.JSONMiddleware(),
+		auth.Authentication(),
+	)
+
+	evaluation.GET("/:id", endpoint.GetEvaluation(svc))
+	evaluation.POST("/", endpoint.ProcessImage(svc, s.config.Image.MaxSize, s.config.Image.Extensions))
+
+	s.initKafkaListeners(svc)
+
 	return router
 }
 
-func (s *serverConfiguration) initKafkaListeners() {
+func (s *serverConfiguration) initKafkaListeners(svc service.Service) {
 	go func() {
-		r := kafka.Reader(kafka.TopicReportCreated, kafka.TopicReportCreatedGroup)
-		w := kafka.Writer(kafka.TopicImageProcessed)
-		req := kafka.NewEmptyReportCreatedMessage()
+		r := kafka.Reader(kafka.TopicImageProcessed, kafka.TopicImageProcessed)
+		req := kafka.NewEmptyImageProcessedMessage()
 		for {
-			ctx := context.Background()
-			err := r.Read(ctx, req)
+			err := r.Read(context.Background(), req)
 			if err != nil {
 				if err == io.EOF {
 					break
 				}
-				log.Errorf("could not read message on report created: %w", err)
+				log.Errorf("could not read message on image processed: %w", err)
 				continue
 			}
-
-			res, err := endpoint.OnReportCreatedMessage(ctx, req)
-			if err != nil {
-				log.Errorf("could not handle message on report created: %w", err)
+			log.Debugf("received message about image processed: %+v", req)
+			if err := endpoint.AddEvaluation(svc, req); err != nil {
+				log.Errorf("could not add evaluation on image processed: %w", err)
 				continue
-			}
-
-			if err := w.Write(ctx, res); err != nil {
-				log.Errorf("could not write message on report created: %w", err)
-			}
-		}
-	}()
-
-	go func() {
-		r := kafka.Reader(kafka.TopicReportDeleted, kafka.TopicReportDeleted)
-		req := kafka.NewEmptyDeletedReportMessage()
-		for {
-			ctx := context.Background()
-			err := r.Read(ctx, req)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				log.Errorf("could not read message on report deleted: %w", err)
-				continue
-			}
-
-			if err := endpoint.OnReportDeletedMessage(ctx, req); err != nil {
-				log.Errorf("could not handle message on report deleted: %w", err)
 			}
 		}
 	}()

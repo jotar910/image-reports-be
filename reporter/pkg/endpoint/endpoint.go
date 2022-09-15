@@ -7,6 +7,7 @@ import (
 
 	"image-reports/reporter/dtos"
 	"image-reports/reporter/mappers"
+	"image-reports/reporter/models"
 	"image-reports/reporter/pkg/service"
 
 	"image-reports/helpers/services/auth"
@@ -71,10 +72,11 @@ func GetReport(svc service.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil || id < 1 {
-			c.Next()
+			c.Status(http.StatusNotFound)
 			return
 		}
-		report, err := svc.ReadById(uint(id))
+		var report *models.Reports
+		report, err = svc.ReadById(uint(id))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -117,7 +119,7 @@ func ReportApproval(svc service.Service) gin.HandlerFunc {
 		}
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil || id < 1 {
-			c.Next()
+			c.Status(http.StatusNotFound)
 			return
 		}
 		var reportPatch dtos.ReportPatch

@@ -9,7 +9,6 @@ import (
 
 	shared_models "image-reports/shared/models"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -70,7 +69,7 @@ func (svc *service) Create(userId uint, creation dtos.ReportCreation) (*models.R
 	report := &models.Reports{
 		Name:     creation.Name,
 		UserID:   userId,
-		ImageID:  uuid.NewString(),
+		ImageID:  creation.ImageID,
 		Callback: creation.Callback,
 	}
 	if tx := svc.db.Create(report); tx.Error != nil {

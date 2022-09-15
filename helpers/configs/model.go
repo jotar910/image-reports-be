@@ -11,6 +11,7 @@ type DatabaseConfig struct {
 type GlobalConfig struct {
 	Gin      ginConfig
 	Services serviceListConfig
+	Image    imageConfig
 }
 
 type ginConfig struct {
@@ -29,4 +30,9 @@ type serviceListConfig struct {
 type serviceConfig struct {
 	Host string
 	Port int
+}
+
+type imageConfig struct {
+	MaxSize    int64
+	Extensions string
 }

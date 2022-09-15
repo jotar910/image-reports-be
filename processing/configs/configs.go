@@ -16,7 +16,7 @@ func newAppConfig(global *configs_helper.GlobalConfig, local *ServiceConfig) *Ap
 }
 
 type ServiceConfig struct {
-	// Empty by design
+	Database configs_helper.DatabaseConfig
 }
 
 var Config *AppConfig

@@ -2,6 +2,10 @@
     "gin": {
         "mode": "debug"
     },
+    "image": {
+        "maxSize": 10000000,
+        "extensions": "jpg, jpeg, png, gif"
+    },
     "services": {
         "apiGateway": {
             "host": "localhost",
