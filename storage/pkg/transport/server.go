@@ -1,10 +1,8 @@
 package transport
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 
 	"image-reports/storage/configs"
@@ -12,7 +10,6 @@ import (
 	"image-reports/storage/pkg/service"
 
 	"image-reports/helpers/services/auth"
-	"image-reports/helpers/services/kafka"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
@@ -42,8 +39,6 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 			log.Fatalf("listen: %s", err)
 		}
 	}()
-
-	s.initKafkaListeners()
 
 	return srv
 }
@@ -75,53 +70,4 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 	)
 
 	return router
-}
-
-func (s *serverConfiguration) initKafkaListeners() {
-	go func() {
-		r := kafka.Reader(kafka.TopicReportCreated, kafka.TopicReportCreatedGroup)
-		w := kafka.Writer(kafka.TopicImageStored)
-		req := kafka.NewEmptyReportCreatedMessage()
-		for {
-			ctx := context.Background()
-			err := r.Read(ctx, req)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				log.Errorf("could not read message on report created: %w", err)
-				continue
-			}
-
-			res, err := endpoint.OnReportCreatedMessage(ctx, req)
-			if err != nil {
-				log.Errorf("could not handle message on report created: %w", err)
-				continue
-			}
-
-			if err := w.Write(ctx, res); err != nil {
-				log.Errorf("could not write message on report created: %w", err)
-			}
-		}
-	}()
-
-	go func() {
-		r := kafka.Reader(kafka.TopicReportDeleted, kafka.TopicReportDeleted)
-		req := kafka.NewEmptyDeletedReportMessage()
-		for {
-			ctx := context.Background()
-			err := r.Read(ctx, req)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				log.Errorf("could not read message on report deleted: %w", err)
-				continue
-			}
-
-			if err := endpoint.OnReportDeletedMessage(ctx, req); err != nil {
-				log.Errorf("could not handle message on report deleted: %w", err)
-			}
-		}
-	}()
 }

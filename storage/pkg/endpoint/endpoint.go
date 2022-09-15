@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	"image-reports/storage/dtos"
 
+	"image-reports/helpers/services/auth"
 	"image-reports/helpers/services/kafka"
 	"image-reports/helpers/validators"
 
@@ -27,26 +29,38 @@ func OnReportDeletedMessage(ctx context.Context, message *kafka.ReportDeletedMes
 
 func GetImage(folder string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.File(path.Join(folder, c.Param("id")))
+		claim, err := auth.GetTokenClaim(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		c.File(path.Join(folder, strconv.Itoa(int(claim.Id)), c.Param("id")))
 	}
 }
 
 func SaveImage(folder string, maxSize int64, availableExtensions string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		claim, err := auth.GetTokenClaim(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
 		var form dtos.SaveImage
 		if err := c.ShouldBind(&form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 
-		} else if err := validators.ImageValidator("image", form.Image, maxSize, availableExtensions); err != nil {
+		}
+		if err := validators.ImageValidator("image", form.Image, maxSize, availableExtensions); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+		savingFolder := path.Join(folder, strconv.Itoa(int(claim.Id)))
+		if err := os.MkdirAll(savingFolder, os.ModePerm); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		if err := c.SaveUploadedFile(form.Image, path.Join(folder, form.ImageID)); err != nil {
+		if err := c.SaveUploadedFile(form.Image, path.Join(savingFolder, form.ImageID)); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}

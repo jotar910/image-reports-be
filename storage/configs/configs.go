@@ -16,13 +16,7 @@ func newAppConfig(global *configs_helper.GlobalConfig, local *ServiceConfig) *Ap
 }
 
 type ServiceConfig struct {
-	Path  string
-	Image imageConfig
-}
-
-type imageConfig struct {
-	MaxSize    int64
-	Extensions string
+	Path string
 }
 
 var Config *AppConfig
