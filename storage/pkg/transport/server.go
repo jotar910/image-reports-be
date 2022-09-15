@@ -11,6 +11,7 @@ import (
 	"image-reports/storage/pkg/endpoint"
 	"image-reports/storage/pkg/service"
 
+	"image-reports/helpers/services/auth"
 	"image-reports/helpers/services/kafka"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
@@ -62,6 +63,16 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 			"message": "pong",
 		})
 	})
+
+	storage := root.Group("/storage")
+
+	storage.Use(auth.Authentication())
+
+	storage.GET("/:id", endpoint.GetImage(s.config.Path))
+	storage.POST("/",
+		server.JSONMiddleware(),
+		endpoint.SaveImage(s.config.Path, s.config.Image.MaxSize, s.config.Image.Extensions),
+	)
 
 	return router
 }

@@ -1,2 +1,7 @@
 {
+    "path": "./db-data/storage",
+    "image": {
+        "maxSize": 10000000,
+        "extensions": "jpg, jpeg, png, gif"
+    }
 }

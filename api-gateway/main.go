@@ -15,7 +15,7 @@ func main() {
 	log.Initialize()
 
 	// Initialize Configs
-	config, err := configs.Initialize("users")
+	config, err := configs.Initialize("api-gateway")
 	if err != nil {
 		log.Fatalf("config: %s", err)
 	}

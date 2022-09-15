@@ -11,5 +11,5 @@ type ReportCreation struct {
 	Callback string                           `form:"callback" binding:"required,max=2048"`
 	Type     shared_models.ReportCreationType `form:"type" binding:"required"`
 	Url      string                           `form:"url" binding:"urlTypeRequired,max=2048"`
-	File     *multipart.FileHeader            `form:"file" binding:"fileTypeRequired,max=2048"`
+	File     *multipart.FileHeader            `form:"file" binding:"fileTypeRequired"`
 }
