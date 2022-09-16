@@ -10,6 +10,29 @@ import (
 	log "image-reports/helpers/services/logger"
 )
 
+var options [][]string = [][]string{
+	{"Dark", "Murder", "Violence"},
+	{"Violence"},
+	{"Dark", "Frightening", "Obscene", "Sharp", "Objects"},
+	{"Frightening", "Absurd", "Obscene"},
+	{"Alcohol", "Drugs", "Smoking"},
+	{"Drugs", "Dark"},
+	{"Sharp", "Objects"},
+	{"Smoking"},
+	{"Drugs"},
+	{"Dark", "Absurd"},
+	{"Absurd, Sports"},
+	{"Beauty", "Happiness"},
+	{"Friends", "Travel"},
+	{"Colorful", "Friends", "Sports", "Happiness"},
+	{"Animals", "Love"},
+	{"Sports", "Health", "Love", "Family"},
+	{"Friends", "Love", "Happiness"},
+	{"Love", "Family", "Friends"},
+	{"Love", "Family", "Friends", "Animals", "Health"},
+	{"Colorful", "Love", "Family", "Animals", "Beauty", "Friends", "Travel", "Happiness", "Sports", "Health"},
+}
+
 type processAlgorithm struct {
 	reportId uint
 	imageId  string
@@ -31,7 +54,8 @@ func (pa *processAlgorithm) execute() {
 	value := randIntn(100)
 
 	if firstThreshold := randInti(50, 100); value < firstThreshold {
-		pa.onExecuteSuccess(0, []string{}) // TODO
+		index := randInti(0, len(options))
+		pa.onExecuteSuccess(index*5, options[index])
 		return
 	}
 	pa.onExecuteError(errors.New("unable to process image"))
