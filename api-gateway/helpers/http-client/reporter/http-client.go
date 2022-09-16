@@ -2,7 +2,6 @@ package http_client
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"image-reports/api-gateway/dtos"

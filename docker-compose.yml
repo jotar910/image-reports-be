@@ -2,6 +2,33 @@ version: '3.9'
 
 services:
 
+  gateway_server:
+    build:
+      dockerfile: ./api-gateway/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - 8080:8080
+    networks:
+      image-reports:
+        ipv4_address: 10.7.0.2
+
+  users_server:
+    build:
+      dockerfile: ./users/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - 8081:8081
+    depends_on:
+      users_database:
+        condition: service_healthy
+    networks:
+      image-reports:
+        ipv4_address: 10.7.1.2
+
   users_database:
     image: postgres
     restart: always
@@ -19,6 +46,21 @@ services:
     networks:
       image-reports:
         ipv4_address: 10.7.1.3
+
+  reports_server:
+    build:
+      dockerfile: ./reporter/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - 8082:8082
+    depends_on:
+      reports_database:
+        condition: service_healthy
+    networks:
+      image-reports:
+        ipv4_address: 10.7.2.2
 
   reports_database:
     image: postgres
@@ -38,7 +80,22 @@ services:
       image-reports:
         ipv4_address: 10.7.2.3
 
-  evaluations_database:
+  processing_server:
+    build:
+      dockerfile: ./processing/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - 8083:8083
+    depends_on:
+      processing_database:
+        condition: service_healthy
+    networks:
+      image-reports:
+        ipv4_address: 10.7.3.2
+
+  processing_database:
     image: postgres
     restart: always
     env_file:
@@ -55,6 +112,33 @@ services:
     networks:
       image-reports:
         ipv4_address: 10.7.3.3
+
+  storage_server:
+    build:
+      dockerfile: ./storage/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - 8083:8083
+    depends_on:
+      processing_database:
+        condition: service_healthy
+    networks:
+      image-reports:
+        ipv4_address: 10.7.4.2
+  
+  init-databases:
+    image: postgres
+    container_name: init-databases
+    command: ["echo", "'Databases were initiated'"]
+    depends_on:
+      users_database:
+        condition: service_healthy
+      reports_database:
+        condition: service_healthy
+      processing_database:
+        condition: service_healthy
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
@@ -89,6 +173,14 @@ services:
     networks:
       image-reports:
         ipv4_address: 10.7.10.3
+  
+  init-kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: init-kafka
+    command: ["echo", "'Kafka was initiated'"]
+    depends_on:
+      kafka:
+        condition: service_healthy
 
 networks:
   image-reports:

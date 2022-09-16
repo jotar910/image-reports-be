@@ -1,0 +1,35 @@
+{
+    "gin": {
+        "mode": "release"
+    },
+    "image": {
+        "maxSize": 10000000,
+        "extensions": "jpg, jpeg, png, gif"
+    },
+    "services": {
+        "apiGateway": {
+            "host": "10.7.0.2",
+            "port": 8080
+        },
+        "users": {
+            "host": "10.7.1.2",
+            "port": 8081
+        },
+        "reporter": {
+            "host": "10.7.2.2",
+            "port": 8082
+        },
+        "processing": {
+            "host": "10.7.3.2",
+            "port": 8083
+        },
+        "storage": {
+            "host": "10.7.4.2",
+            "port": 8084
+        },
+        "realtime": {
+            "host": "10.7.5.2",
+            "port": 8085
+        }
+    }
+}

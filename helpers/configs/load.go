@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"strings"
 
@@ -35,11 +36,11 @@ func LoadConfig[TGlobal any, TLocal any, TGroup any](
 }
 
 func loadGlobalConfig[T any](cmd *cobra.Command) (*T, error) {
-	return createConfig[T](cmd, path.Join(".", "config.json"))
+	return createConfig[T](cmd, path.Join(os.Getenv("APP_HOME"), "config.json"))
 }
 
 func loadServiceConfig[T any](name string, cmd *cobra.Command) (*T, error) {
-	return createConfig[T](cmd, path.Join(".", name, "config.json"))
+	return createConfig[T](cmd, path.Join(os.Getenv("APP_HOME"), name, "config.json"))
 }
 
 func createConfig[T any](cmd *cobra.Command, filename string) (*T, error) {

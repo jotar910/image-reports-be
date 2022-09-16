@@ -2,8 +2,10 @@ package configs
 
 import (
 	configs_helper "image-reports/helpers/configs"
+	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type AppConfig struct {
@@ -39,5 +41,9 @@ func Initialize(name string) (*AppConfig, error) {
 func createCommand() *cobra.Command {
 	command := &cobra.Command{}
 	command.PersistentFlags().StringP("mode", "m", "", "the environment mode (e.g for mode dev, config file must be named config.dev.json)")
+	viper.BindPFlag("mode", command.PersistentFlags().Lookup("mode"))
+	if err := command.Execute(); err != nil {
+		log.Fatalf("executing cobra command: %v", err)
+	}
 	return command
 }

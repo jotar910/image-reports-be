@@ -1,15 +1,12 @@
 package endpoint
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"path"
-	"time"
 
 	"image-reports/storage/dtos"
 
-	"image-reports/helpers/services/kafka"
 	"image-reports/helpers/validators"
 
 	"github.com/gin-gonic/gin"

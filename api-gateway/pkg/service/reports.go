@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"image-reports/api-gateway/dtos"
 	processing_dtos "image-reports/api-gateway/dtos/processing"
 	reporter_dtos "image-reports/api-gateway/dtos/reporter"

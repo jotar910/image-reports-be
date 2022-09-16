@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
 	"image-reports/reporter/dtos"
 	"image-reports/reporter/models"

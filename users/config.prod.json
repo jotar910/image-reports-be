@@ -1,0 +1,9 @@
+{
+    "database": {
+        "host": "10.7.1.3",
+        "port": 1432,
+        "username": "root",
+        "password": "password",
+        "database": "users"
+    }
+}
