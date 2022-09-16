@@ -21,7 +21,7 @@ type Service interface {
 	GetReport(ctx context.Context, id uint) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
 	GetFile(ctx context.Context, imageId string) (*http.Response, *dtos.ErrorOutbound)
 	CreateReport(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
-	ReportApproval(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
+	ReportApproval(ctx context.Context, id uint, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
 }
 
 type service struct {

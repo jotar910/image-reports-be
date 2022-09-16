@@ -91,7 +91,7 @@ func ReportApproval(svc service.Service) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		report, oerr := svc.ReportApproval(c, reportPatch)
+		report, oerr := svc.ReportApproval(c, uint(id), reportPatch)
 		if oerr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": oerr.Error})
 			return

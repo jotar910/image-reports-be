@@ -1,5 +1,7 @@
 package service
 
+// Empty by design.
+
 type Service interface {
 }
 

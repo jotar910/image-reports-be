@@ -63,8 +63,8 @@ func (svc service) CreateReport(ctx context.Context, form reporter_dtos.ReportCr
 	return utils.Pointer(mappers.MapReport(*report, *user, processing_dtos.Evaluation{})), nil
 }
 
-func (svc service) ReportApproval(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound) {
-	report, oerr := svc.reporterClient.Patch(ctx, patch)
+func (svc service) ReportApproval(ctx context.Context, id uint, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound) {
+	report, oerr := svc.reporterClient.Patch(ctx, id, patch)
 	if oerr != nil {
 		return nil, oerr
 	}

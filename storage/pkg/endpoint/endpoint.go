@@ -15,6 +15,7 @@ import (
 func GetImage(folder string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.File(path.Join(folder, c.Param("id")))
+		c.Header("Content-Type", "image/png")
 	}
 }
 

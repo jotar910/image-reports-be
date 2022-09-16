@@ -72,7 +72,8 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 
 	authentication := root.Group("/auth")
 	authentication.Use(server.CORSMiddleware())
-	authentication.OPTIONS("/login", server.CORSMiddleware())
+
+	authentication.OPTIONS("/login")
 	authentication.POST("/login", endpoint.Login(svc))
 
 	resources := root.Group("/")
@@ -89,17 +90,17 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 		server.JSONMiddleware(),
 	)
 
-	reports.OPTIONS("/", server.CORSMiddleware())
-	reports.OPTIONS("/:id", server.CORSMiddleware())
+	reports.OPTIONS("/")
+	reports.OPTIONS("/:id")
 	reports.GET("/", endpoint.ListReports(svc))
-	reports.GET("/:id/", endpoint.GetReport(svc))
+	reports.GET("/:id", endpoint.GetReport(svc))
 	reports.POST("/", endpoint.CreateReport(svc))
 	reports.PATCH("/:id", auth.AllowOnlyRole(models.AdminRole), endpoint.ReportApproval(svc))
 
 	storage := resources.Group("/storage")
 	storage.Use(server.CORSMiddleware())
 
-	storage.OPTIONS("/:id", server.CORSMiddleware())
+	storage.OPTIONS("/:id")
 	storage.GET("/:id", endpoint.GetFile(svc))
 
 	return router
