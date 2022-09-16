@@ -1,8 +1,8 @@
 package dtos
 
-import shared_dtos "image-reports/shared/dtos"
+import user_dtos "image-reports/api-gateway/dtos/user"
 
 type LoginResponse struct {
-	User  shared_dtos.UserResponse `json:"user"`
-	Token string                   `json:"token"`
+	User  user_dtos.UserResponse `json:"user"`
+	Token string                 `json:"token"`
 }

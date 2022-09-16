@@ -8,20 +8,20 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-var writers = make(map[string]*kafkaWriter, 0)
-var readers = make(map[string]*kafkaReader, 0)
+var writers = make(map[string]*KafkaWriter, 0)
+var readers = make(map[string]*KafkaReader, 0)
 
 type Message = kafka.Message
 
-type kafkaWriter struct {
+type KafkaWriter struct {
 	writer *kafka.Writer
 }
 
-func Writer(topic string) *kafkaWriter {
+func Writer(topic string) *KafkaWriter {
 	if writer, ok := writers[topic]; ok {
 		return writer
 	}
-	return &kafkaWriter{
+	return &KafkaWriter{
 		kafka.NewWriter(kafka.WriterConfig{
 			Brokers: []string{brokerAddress},
 			Topic:   topic,
@@ -29,7 +29,7 @@ func Writer(topic string) *kafkaWriter {
 	}
 }
 
-func (w *kafkaWriter) Write(ctx context.Context, message KafkaMessage) error {
+func (w *KafkaWriter) Write(ctx context.Context, message KafkaMessage) error {
 	m, err := message.ToMessage()
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (w *kafkaWriter) Write(ctx context.Context, message KafkaMessage) error {
 	return w.writer.WriteMessages(ctx, m)
 }
 
-func (w *kafkaWriter) Close() error {
+func (w *KafkaWriter) Close() error {
 	err := w.writer.Close()
 	if err == nil {
 		delete(writers, w.writer.Topic)
@@ -45,15 +45,15 @@ func (w *kafkaWriter) Close() error {
 	return err
 }
 
-type kafkaReader struct {
+type KafkaReader struct {
 	reader *kafka.Reader
 }
 
-func Reader(topic string, group string) *kafkaReader {
+func Reader(topic string, group string) *KafkaReader {
 	if reader, ok := readers[topic]; ok {
 		return reader
 	}
-	return &kafkaReader{
+	return &KafkaReader{
 		kafka.NewReader(kafka.ReaderConfig{
 			Brokers: []string{brokerAddress},
 			Topic:   topic,
@@ -62,7 +62,7 @@ func Reader(topic string, group string) *kafkaReader {
 	}
 }
 
-func (r *kafkaReader) Read(ctx context.Context, message KafkaMessage) error {
+func (r *KafkaReader) Read(ctx context.Context, message KafkaMessage) error {
 	m, err := r.reader.ReadMessage(ctx)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (r *kafkaReader) Read(ctx context.Context, message KafkaMessage) error {
 	return message.FromMessage(m)
 }
 
-func (r *kafkaReader) Close() error {
+func (r *KafkaReader) Close() error {
 	err := r.reader.Close()
 	if err == nil {
 		delete(readers, r.reader.Config().Topic)

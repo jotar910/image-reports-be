@@ -73,6 +73,7 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 	)
 
 	evaluation.GET("/:id", endpoint.GetEvaluation(svc))
+	evaluation.POST("/search", endpoint.SearchEvaluations(svc))
 	evaluation.POST("/", endpoint.ProcessImage(svc, s.config.Image.MaxSize, s.config.Image.Extensions))
 
 	s.initKafkaListeners(svc)

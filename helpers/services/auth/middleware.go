@@ -43,7 +43,6 @@ func AllowOnlyRole(role shared_models.RolesEnum) gin.HandlerFunc {
 		if claim.Role != role {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("you must be assigned as %s", role)})
 			return
-
 		}
 	}
 }

@@ -6,7 +6,6 @@ import (
 
 	"image-reports/reporter/configs"
 	"image-reports/reporter/pkg/transport"
-	"image-reports/reporter/validators"
 
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
@@ -28,9 +27,6 @@ func main() {
 	log.Infof("Starting with config: %+v", config)
 
 	gin.SetMode(config.Gin.Mode)
-
-	// Initialize custom validators
-	validators.Initialize()
 
 	// Connect to DB
 	dsn := fmt.Sprintf(

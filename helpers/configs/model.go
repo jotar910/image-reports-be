@@ -9,30 +9,30 @@ type DatabaseConfig struct {
 }
 
 type GlobalConfig struct {
-	Gin      ginConfig
+	Gin      GinConfig
 	Services serviceListConfig
-	Image    imageConfig
+	Image    ImageConfig
 }
 
-type ginConfig struct {
+type GinConfig struct {
 	Mode string
 }
 
 type serviceListConfig struct {
-	ApiGateway serviceConfig
-	Users      serviceConfig
-	Reporter   serviceConfig
-	Storage    serviceConfig
-	Processing serviceConfig
-	Realtime   serviceConfig
+	ApiGateway ServiceConfig
+	Users      ServiceConfig
+	Reporter   ServiceConfig
+	Storage    ServiceConfig
+	Processing ServiceConfig
+	Realtime   ServiceConfig
 }
 
-type serviceConfig struct {
+type ServiceConfig struct {
 	Host string
 	Port int
 }
 
-type imageConfig struct {
+type ImageConfig struct {
 	MaxSize    int64
 	Extensions string
 }

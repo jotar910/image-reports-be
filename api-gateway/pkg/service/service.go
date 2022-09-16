@@ -2,39 +2,44 @@ package service
 
 import (
 	"context"
+	"net/http"
 
 	"image-reports/api-gateway/dtos"
-
-	"image-reports/helpers/services/auth"
-	users_client "image-reports/helpers/services/http-client/users"
-	shared_dtos "image-reports/shared/dtos"
+	reporter_dtos "image-reports/api-gateway/dtos/reporter"
+	user_dtos "image-reports/api-gateway/dtos/user"
+	processing_client "image-reports/api-gateway/helpers/http-client/processing"
+	reporter_client "image-reports/api-gateway/helpers/http-client/reporter"
+	storage_client "image-reports/api-gateway/helpers/http-client/storage"
+	user_client "image-reports/api-gateway/helpers/http-client/users"
 )
 
 type Service interface {
-	Login(ctx context.Context, credentials shared_dtos.UserCredentials) (*dtos.LoginResponse, error)
+	Login(ctx context.Context, credentials user_dtos.UserCredentials) (*dtos.LoginResponse, *dtos.ErrorOutbound)
+	CheckUserById(ctx context.Context, id uint) bool
+	GetUserById(ctx context.Context, id uint) (*user_dtos.UserResponse, *dtos.ErrorOutbound)
+	ListReports(ctx context.Context, filters reporter_dtos.ListFilters) (*dtos.PageableList[reporter_dtos.ReportOutbound], *dtos.ErrorOutbound)
+	GetReport(ctx context.Context, id uint) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
+	GetFile(ctx context.Context, imageId string) (*http.Response, *dtos.ErrorOutbound)
+	CreateReports(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
 }
 
 type service struct {
-	usersClient users_client.HttpClient
+	userClient       user_client.HttpClient
+	reporterClient   reporter_client.HttpClient
+	processingClient processing_client.HttpClient
+	storageClient    storage_client.HttpClient
 }
 
-func NewService(usersClient users_client.HttpClient) Service {
-	return &service{usersClient}
-}
-
-func (svc service) Login(ctx context.Context, credentials shared_dtos.UserCredentials) (*dtos.LoginResponse, error) {
-	usr, err := svc.usersClient.CheckCredentials(credentials)
-	if err != nil {
-		return nil, err
+func NewService(
+	usersClient user_client.HttpClient,
+	reporterClient reporter_client.HttpClient,
+	processingClient processing_client.HttpClient,
+	storageClient storage_client.HttpClient,
+) Service {
+	return &service{
+		usersClient,
+		reporterClient,
+		processingClient,
+		storageClient,
 	}
-
-	tokenString, err := auth.GenerateJWT(usr.Id, usr.Email, usr.Role)
-	if err != nil {
-		return nil, err
-	}
-
-	return &dtos.LoginResponse{
-		User:  usr,
-		Token: tokenString,
-	}, nil
 }

@@ -55,7 +55,7 @@ func (svc *service) ReadAll(filters dtos.ListFilters) ([]*models.Reports, error)
 
 func (svc *service) ReadById(id uint) (*models.Reports, error) {
 	report := new(models.Reports)
-	tx := svc.db.Joins("Approval").First(report, id)
+	tx := svc.db.Joins("Approval").Find(report, id)
 	if tx.Error == nil {
 		return report, nil
 	}
@@ -92,7 +92,8 @@ func (svc *service) PatchStatus(id uint, status shared_models.ReportStatusEnum) 
 
 func (svc *service) PatchGrade(id uint, grade int) (*models.Reports, error) {
 	report := &models.Reports{Model: gorm.Model{ID: id}}
-	tx := svc.db.Model(report).Clauses(clause.Returning{}).Update("grade", grade)
+	tx := svc.db.Model(report).Clauses(clause.Returning{}).
+		Updates(&models.Reports{Grade: &grade, Status: shared_models.ReportStatusPending})
 	if tx.Error == nil {
 		return report, nil
 	}
@@ -105,10 +106,9 @@ func (svc *service) PatchGrade(id uint, grade int) (*models.Reports, error) {
 func (svc *service) PatchApproval(id, userId uint, status shared_models.ApprovalStatusEnum) (*models.Reports, error) {
 	report := new(models.Reports)
 	tx := svc.db.Begin()
-	tx = tx.Joins("Approval").First(report, id)
+	tx = tx.Joins("Approval").Find(report, id)
 	if tx.Error != nil {
 		tx.Rollback()
-		fmt.Printf("%v\n", tx.Error)
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

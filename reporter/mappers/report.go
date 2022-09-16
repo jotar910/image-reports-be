@@ -31,7 +31,7 @@ func MapToReportDTO(report *models.Reports) dtos.Report {
 		ImageID:  report.ImageID,
 		Callback: report.Callback,
 		Status:   report.Status,
-		Date:     report.CreatedAt.String(),
+		Date:     report.CreatedAt.Unix(),
 	}
 	if report.Status == shared_models.ReportStatusPublished {
 		approval := MapToApprovalDTO(&report.Approval)
@@ -44,6 +44,6 @@ func MapToApprovalDTO(approval *models.Approvals) dtos.Approval {
 	return dtos.Approval{
 		UserID: approval.UserID,
 		Status: approval.Status,
-		Date:   approval.CreatedAt.String(),
+		Date:   approval.CreatedAt.Unix(),
 	}
 }

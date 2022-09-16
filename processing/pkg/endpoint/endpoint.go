@@ -40,6 +40,22 @@ func GetEvaluation(svc service.Service) gin.HandlerFunc {
 	}
 }
 
+func SearchEvaluations(svc service.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var query dtos.QuerySearch
+		if err := c.BindJSON(&query); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		evaluations, err := svc.ReadAll(query.Ids)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, mappers.MapToEvaluationsDTO(evaluations))
+	}
+}
+
 func ProcessImage(svc service.Service, maxSize int64, availableExtensions string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claim, err := auth.GetTokenClaim(c)

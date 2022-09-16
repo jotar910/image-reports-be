@@ -83,6 +83,7 @@ type ImageProcessedMessage struct {
 	Grade      int
 	Categories []string
 	Err        error
+	Going      bool
 }
 
 func (m *ImageProcessedMessage) ToMessage() (Message, error) {
@@ -97,12 +98,20 @@ func NewEmptyImageProcessedMessage() *ImageProcessedMessage {
 	return &ImageProcessedMessage{}
 }
 
+func NewImageProcessedMessageGoing(reportId uint) *ImageProcessedMessage {
+	return &ImageProcessedMessage{
+		ReportId: reportId,
+		Going:    true,
+	}
+}
+
 func NewImageProcessedMessageCompleted(reportId uint, imageId string, grade int, categories []string) *ImageProcessedMessage {
 	return &ImageProcessedMessage{
 		ReportId:   reportId,
 		ImageId:    imageId,
 		Grade:      grade,
 		Categories: categories,
+		Going:      false,
 	}
 }
 
@@ -111,39 +120,7 @@ func NewImageProcessedMessageFailed(reportId uint, imageId string, err error) *I
 		ReportId: reportId,
 		ImageId:  imageId,
 		Err:      err,
-	}
-}
-
-type ImageStoredMessage struct {
-	ReportId uint
-	ImageId  string
-	Err      error
-}
-
-func (m *ImageStoredMessage) ToMessage() (Message, error) {
-	return toMessage(m.ReportId, m)
-}
-
-func (m *ImageStoredMessage) FromMessage(source Message) error {
-	return fromMessage(source, m)
-}
-
-func NewEmptyImageStoredMessage() *ImageStoredMessage {
-	return &ImageStoredMessage{}
-}
-
-func NewImageStoredMessageCompleted(reportId uint, imageId string) *ImageStoredMessage {
-	return &ImageStoredMessage{
-		ReportId: reportId,
-		ImageId:  imageId,
-	}
-}
-
-func NewImageStoredMessageFailed(reportId uint, imageId string, err error) *ImageStoredMessage {
-	return &ImageStoredMessage{
-		ReportId: reportId,
-		ImageId:  imageId,
-		Err:      err,
+		Going:    false,
 	}
 }
 

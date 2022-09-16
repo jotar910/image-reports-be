@@ -12,5 +12,5 @@ type Report struct {
 	Callback string                         `json:"callback"`
 	Status   shared_models.ReportStatusEnum `json:"status"`
 	Approval *Approval                      `json:"approval"`
-	Date     string                         `json:"date"`
+	Date     int64                          `json:"date"`
 }

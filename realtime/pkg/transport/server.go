@@ -86,24 +86,4 @@ func (s *serverConfiguration) initKafkaListeners() {
 			}
 		}
 	}()
-
-	go func() {
-		r := kafka.Reader(kafka.TopicImageStored, kafka.TopicImageStoredGroup)
-		req := kafka.NewEmptyImageStoredMessage()
-		for {
-			ctx := context.Background()
-			err := r.Read(ctx, req)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				log.Errorf("could not read message on image processed: %w", err)
-				continue
-			}
-
-			if err := endpoint.OnImageStoredMessage(ctx, req); err != nil {
-				log.Errorf("could not handle message on image processed: %w", err)
-			}
-		}
-	}()
 }

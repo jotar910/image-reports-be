@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"image-reports/shared/models"
 	"image-reports/users/configs"
 	"image-reports/users/pkg/endpoint"
 	"image-reports/users/pkg/service"
 
+	"image-reports/helpers/services/auth"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
@@ -61,7 +63,21 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 		})
 	})
 
-	root.POST("/auth", endpoint.CheckCredentials(svc))
+	authentication := root.Group("/auth")
+	authentication.Use(server.JSONMiddleware())
+
+	authentication.POST("/", endpoint.CheckCredentials(svc))
+	authentication.GET("/:id", auth.Authentication(), endpoint.CheckUserId(svc))
+
+	users := root.Group("/users")
+	users.Use(
+		server.JSONMiddleware(),
+		auth.Authentication(),
+		auth.AllowOnlyRole(models.AdminRole),
+	)
+
+	users.GET("/:id", endpoint.GetUser(svc))
+	users.POST("/search", endpoint.SearchUsers(svc))
 
 	return router
 }

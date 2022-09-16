@@ -12,6 +12,7 @@ import (
 
 type Service interface {
 	ReadById(id uint) (*models.Evaluations, error)
+	ReadAll(ids []uint) ([]models.Evaluations, error)
 	Create(evaluation dtos.Evaluation) (*models.Evaluations, error)
 	Process(userId uint, form dtos.ProcessImage) error
 }
@@ -25,15 +26,24 @@ func NewService(db *gorm.DB) Service {
 }
 
 func (svc *service) ReadById(id uint) (*models.Evaluations, error) {
-	report := new(models.Evaluations)
-	tx := svc.db.Preload("Categories").First(report, id)
+	evaluation := new(models.Evaluations)
+	tx := svc.db.Preload("Categories").Where(&models.Evaluations{ReportID: id}).Find(evaluation)
 	if tx.Error == nil {
-		return report, nil
+		return evaluation, nil
 	}
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
 	return nil, tx.Error
+}
+
+func (svc *service) ReadAll(ids []uint) ([]models.Evaluations, error) {
+	evaluations := make([]models.Evaluations, 0)
+	tx := svc.db.Preload("Categories").Where(map[string]interface{}{"report_id": ids}).Find(&evaluations)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return evaluations, nil
 }
 
 func (svc *service) Create(evaluation dtos.Evaluation) (*models.Evaluations, error) {

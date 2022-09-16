@@ -24,36 +24,27 @@ func OnImageProcessedMessage(
 	svc service.Service,
 ) error {
 	var err error
-	if message.Err != nil {
-		_, err = svc.PatchGrade(message.ReportId, message.Grade)
+	if message.Err == nil {
+		if message.Going {
+			_, err = svc.PatchStatus(message.ReportId, shared_models.ReportStatusEvaluating)
+
+		} else {
+			_, err = svc.PatchGrade(message.ReportId, message.Grade)
+		}
 	} else {
 		_, err = svc.PatchStatus(message.ReportId, shared_models.ReportStatusError)
 	}
 	return err
 }
 
-func OnImageStoredMessage(
-	ctx context.Context,
-	message *kafka.ImageStoredMessage,
-	svc service.Service,
-) error {
-	if message.Err == nil {
-		return nil
-	}
-	_, err := svc.PatchStatus(message.ReportId, shared_models.ReportStatusError)
-	return err
-}
-
 func ListReports(svc service.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		filters := dtos.ListFilters{
-			Page:  1,
-			Count: 50,
-		}
+		filters := dtos.ListFilters{}
 		if err := c.BindQuery(&filters); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		filters.CheckDefaults()
 		reports, err := svc.ReadAll(filters)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -97,7 +88,7 @@ func CreateReport(svc service.Service) gin.HandlerFunc {
 			return
 		}
 		var reportCreation dtos.ReportCreation
-		if err := c.Bind(&reportCreation); err != nil {
+		if err := c.BindJSON(&reportCreation); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

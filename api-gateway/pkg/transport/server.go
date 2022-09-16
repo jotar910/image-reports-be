@@ -6,10 +6,14 @@ import (
 	"net/http"
 
 	"image-reports/api-gateway/configs"
+	processing_client "image-reports/api-gateway/helpers/http-client/processing"
+	reporters_client "image-reports/api-gateway/helpers/http-client/reporter"
+	storage_client "image-reports/api-gateway/helpers/http-client/storage"
+	users_client "image-reports/api-gateway/helpers/http-client/users"
 	"image-reports/api-gateway/pkg/endpoint"
 	"image-reports/api-gateway/pkg/service"
 
-	users_client "image-reports/helpers/services/http-client/users"
+	"image-reports/helpers/services/auth"
 	log "image-reports/helpers/services/logger"
 	"image-reports/helpers/services/server"
 
@@ -44,23 +48,58 @@ func (s *serverConfiguration) InitApiServer(router *gin.Engine) *http.Server {
 }
 
 func (s *serverConfiguration) InitUserService() service.Service {
-	return service.NewService(users_client.NewHttpClient(s.config.GlobalConfig))
+	return service.NewService(
+		users_client.NewHttpClient(s.config.GlobalConfig),
+		reporters_client.NewHttpClient(s.config.GlobalConfig),
+		processing_client.NewHttpClient(s.config.GlobalConfig),
+		storage_client.NewHttpClient(s.config.GlobalConfig),
+	)
 }
 
 func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 	router := gin.Default()
 
 	root := router.Group("/v1")
+	root.Use(server.CORSMiddleware())
 
 	// Health check
-	root.GET("/ping", func(c *gin.Context) {
+	root.GET("/ping/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
 
-	auth := root.Group("/auth")
-	auth.POST("/login", endpoint.Login(svc))
+	authentication := root.Group("/auth")
+	authentication.Use(server.CORSMiddleware())
+	authentication.OPTIONS("/login", server.CORSMiddleware())
+	authentication.POST("/login", endpoint.Login(svc))
+
+	resources := root.Group("/")
+	resources.Use(
+		server.CORSMiddleware(),
+		auth.Authentication(),
+		AddContextToken(),
+		CheckUserValidity(svc),
+	)
+
+	reports := resources.Group("/reports")
+	reports.Use(
+		server.CORSMiddleware(),
+		server.JSONMiddleware(),
+	)
+
+	reports.OPTIONS("/", server.CORSMiddleware())
+	reports.OPTIONS("/:id/", server.CORSMiddleware())
+	reports.GET("/", endpoint.ListReports(svc))
+	reports.GET("/:id/", endpoint.GetReport(svc))
+	reports.POST("/", endpoint.CreateReport(svc))
+	/* reports.PATCH("/:id", auth.AllowOnlyRole(models.AdminRole), endpoint.ReportApproval(svc)) */
+
+	storage := resources.Group("/storage")
+	storage.Use(server.CORSMiddleware())
+
+	storage.OPTIONS("/:id", server.CORSMiddleware())
+	storage.GET("/:id", endpoint.GetFile(svc))
 
 	return router
 }

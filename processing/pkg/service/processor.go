@@ -13,17 +13,22 @@ import (
 type processAlgorithm struct {
 	reportId uint
 	imageId  string
+	w        *kafka.KafkaWriter
 }
 
 func newProcessAlgorithm(reportId uint, imageId string) *processAlgorithm {
-	return &processAlgorithm{reportId, imageId}
+	return &processAlgorithm{reportId, imageId, kafka.Writer(kafka.TopicImageProcessed)}
 }
 
 func (pa *processAlgorithm) execute() {
-	time.Sleep(time.Duration(randIntn(30000)) * time.Second)
+	m := kafka.NewImageProcessedMessageGoing(pa.reportId)
+	if err := pa.w.Write(context.Background(), m); err != nil {
+		log.Errorf("could not write message on report created: %w", err)
+	}
+
+	time.Sleep(time.Duration(randIntn(30)) * time.Second)
 
 	value := randIntn(100)
-	pa.onExecuteSuccess(0, []string{}) // TODO
 
 	if firstThreshold := randInti(50, 100); value < firstThreshold {
 		pa.onExecuteSuccess(0, []string{}) // TODO
@@ -33,7 +38,6 @@ func (pa *processAlgorithm) execute() {
 }
 
 func (pa *processAlgorithm) onExecuteSuccess(grade int, categories []string) {
-	println("writing")
 	w := kafka.Writer(kafka.TopicImageProcessed)
 	m := kafka.NewImageProcessedMessageCompleted(pa.reportId, pa.imageId, grade, categories)
 	if err := w.Write(context.Background(), m); err != nil {

@@ -16,6 +16,16 @@ func MapToEvaluationDTO(evaluation *models.Evaluations) dtos.Evaluation {
 	}
 }
 
+func MapToEvaluationsDTO(evaluations []models.Evaluations) []dtos.Evaluation {
+	res := make([]dtos.Evaluation, len(evaluations))
+
+	for i, evaluation := range evaluations {
+		res[i] = MapToEvaluationDTO(&evaluation)
+	}
+
+	return res
+}
+
 func MapToEvaluations(evaluation dtos.Evaluation) *models.Evaluations {
 	return &models.Evaluations{
 		ReportID:   evaluation.ReportID,

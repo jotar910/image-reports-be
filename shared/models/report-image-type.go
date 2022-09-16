@@ -3,6 +3,6 @@ package models
 type ReportCreationType string
 
 var (
-	ReportCreationTypeFile = "file"
-	ReportCreationTypeUrl  = "url"
+	ReportCreationTypeFile ReportCreationType = "file"
+	ReportCreationTypeUrl  ReportCreationType = "url"
 )
