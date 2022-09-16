@@ -4,7 +4,7 @@
 
 > API for image 
 
-## Start Locally
+## Start
 
 In order to start the whole application you'll need to run:
 ```sh
@@ -16,120 +16,130 @@ After that, you can populate the databases by running:
 sh scripts/seed.sh
 ```
 
-### Users, accounts and roles.
+You can also start each service separately with `Air` or building and running each service with `go`.
 
-This will setup two containers: server and database.
-
-## Populate Database
-
-After everything is running, you may populate the database with some initial data. For that you'll need to run:
 ```sh
-npm run seed
+air -c api-gateway/.air.toml
+# OR
+go build -o ./dist/api-gateway ./api-gateway && ./dist/api-gateway -m prod
 ```
 
 ## API
 
 - #### `POST /v1/auth/login`
   - User login on the application, returns a JWT Token to be used to authenticate users.
-- #### `GET /v1/ott/:accountId/movies`
-  - Returns a list of movies paginated that belongs to some account.
-- #### `GET /v1/ott/:accountId/movies/:movieId`
-  - Returns the details for a movie belonging to some account.
-- #### `CREATE /v1/ott/:accountId/movies`
-  - Creates a new movie on some account.
-- #### `PUT /v1/ott/:accountId/movies/:movieId`
-  - Patches details for a movie on some account.
-- #### `DELETE /v1/ott/:accountId/movies/:movieId`
-  - Deletes a movie on some account.
 
-This will create all the data for you to start using the application. This data includes:
-
-- ### Users, accounts and roles.
-
-There are two types of roles on this application: Admin and User. The Admin will be able to execute all types of requests, either the resources belong to its account or not. Also, it will have write permissions, and so, he will be able to create, update and delete resources. The User, will only be able to read data that belongs to his account.
-
-It also creates three users: `admin@email.com`, `user1@email.com` and `user2@email.com`. The first is an Admin and the others are Users. The passwords will be generated randomly and printed at the execution point. Each user will have an account associated which contain the *accountId* as `1`, `2` and `3`, respectively.
-
-- ### Actors and directors.
-
-Randomly created. Actors and directors have ID and Name (based on the requirements).
-
-- ### Countries.
-
-Randomly created. Countries have ID and Name (based on the requirements).
-
-- ### Movies.
-
-Randomly created. Long list of movies, which properties were based on the requirements.
-
-## API Endpoints
-
-The API endpoints are fully described in `openapi.yaml` (OpenApi document).
-
-### Summary:
-
-- #### `POST /v1/ott/auth/login`
-  - User login on the application, returns a JWT Token to be used to authenticate users.
-- #### `GET /v1/ott/:accountId/movies`
-  - Returns a list of movies paginated that belongs to some account.
-- #### `GET /v1/ott/:accountId/movies/:movieId`
-  - Returns the details for a movie belonging to some account.
-- #### `CREATE /v1/ott/:accountId/movies`
-  - Creates a new movie on some account.
-- #### `PUT /v1/ott/:accountId/movies/:movieId`
-  - Patches details for a movie on some account.
-- #### `DELETE /v1/ott/:accountId/movies/:movieId`
-  - Deletes a movie on some account.
-
-** You must always add the Authorization header on the request (except the login endpoint itself) in order to access the endpoints (e.g. `Authorization: Bearer <jwt_token>`).
-
-## Configuration
-
-The execution is configured through environment variables.
-You can find this configuration on `.env.docker` file (feel free to modify it).
-
-### General config
-
-| Variable | Description | Default |
-|---|---|---|
-| NODE_ENV | Execution type | production |
-| NODE_PORT | Server listening port | 3000 |
-
-### Database TypeORM
-
-| Variable | Description | Default |
-|---|---|---|
-| TYPEORM_HOST | Database host | 10.7.0.3 |
-| TYPEORM_PORT | Database listening port | 5432 |
-| TYPEORM_USERNAME | Database username | root |
-| TYPEORM_PASSWORD | Database password | password |
-| TYPEORM_DATABASE | Database name | ott_movies |
-| TYPEORM_SYNCHRONIZE | Synchronize database entities on start | true|
-| TYPEORM_LOGGING | Log database operation to the console | false|
-| TYPEORM_ENTITIES | Path to find entities for the synchronization | dist/api/components/**/model.js|
-
-### DBMS Postgres
-
-| Variable | Description | Default |
-|---|---|---|
-| POSTGRES_USER | DBMS user | root |
-| POSTGRES_PASSWORD | DBMS password | password |
-| POSTGRES_DB | DBMS database name | ott_movies |
-
-## Install
-
-```sh
-npm install
+```json
+{
+  "user": {
+    "id": 1,
+    "email": "admin@email.com",
+    "role": "ADMIN"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjM0MzAxMTMsImlkIjoxLCJlbWFpbCI6ImFkbWluQGVtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiJ9.5wEQ4Y3C42FeYJI0jDpDrXGV0xoF-nqUSQ3l5dBi7Ek"
+}
 ```
 
-## Run tests
+- #### `GET /v1/reports`
+  - Returns a paginated list of reports.
+  - Needs Authorization header.
+  - Query Parameters
+    - page (optional): `int`
+    - count (optional): `int`
+  - Response Payload - `PaginatedList<ReportItem>`
 
-```sh
-npm test
+
+```json
+{
+  "content": [
+    {
+      "id": 2,
+      "name": "Report #2",
+      "user": "admin@email.com",
+      "image": "image-2-uuid",
+      "status": "PUBLISHED",
+      "approval": {
+        "userId": 1,
+        "status": "REJECTED",
+        "date": 1663340018
+      },
+      "evaluation": {
+        "grade": 20,
+        "categories": [
+          "Mythic",
+          "Violence",
+          "Abuse"
+        ]
+      },
+      "creationDate": 1663340018
+    }
+  ],
+  "page": 1,
+  "totalPages": 2,
+  "totalElements": 2,
+  "numberOfElements": 1
+}
 ```
 
-## Author
+- #### `GET /v1/reports/:id`
+  - Returns a single report for the given id.
+  - Needs Authorization header.
+  - Parameters
+    - id: `int`
+  - Response Payload - `ReportItem`
 
-👤 **João Rodrigues**
+```json
+{
+  "id": 2,
+  "name": "Report #2",
+  "user": "user1@email.com",
+  "image": "image-2-uuid",
+  "status": "PUBLISHED",
+  "approval": {
+    "userId": 1,
+    "status": "REJECTED",
+    "date": 1663340018
+  },
+  "evaluation": {
+    "grade": 20,
+    "categories": [
+      "Mythic",
+      "Violence",
+      "Abuse"
+    ]
+  },
+  "creationDate": 1663340018
+}
+```
 
-* Github: [@jotar910](https://github.com/jotar910)
+- #### `POST /v1/reports`
+  - Creates a new report on the system.
+  - Needs Authorization header.
+  - Request Body - multipart/form-data with the following fields
+    - name: `string`
+    - callback: `string`
+    - type: `"file" | "url`
+    - url (required if type is url): `string`
+    - file (required if type is file): `binary`
+
+- #### `PATCH /v1/reports/:id`
+  - Replaces the approval state for the given report.
+  - Needs Authorization header.
+  - Only available for Admins.
+  - Request Payload - `PatchApprovalStatus`
+
+```JSON
+{ "approvalStatus":"APPROVED" }
+```
+
+- #### `GET /v1/storage/:id`
+  - Returns the image that corresponds to a given report id.
+  - Needs Authorization header.
+  - Parameters
+    - id: `int`
+  - Response payload: `binary`.
+
+## Architecture Planning
+
+
+![Architecture Diagram](./docs/diagram.png)
