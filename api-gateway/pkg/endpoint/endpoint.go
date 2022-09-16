@@ -70,12 +70,33 @@ func CreateReport(svc service.Service) gin.HandlerFunc {
 		if err := validators.ReportCreationValidator(form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
-		list, oerr := svc.CreateReports(c, form)
+		report, oerr := svc.CreateReport(c, form)
 		if oerr != nil {
 			c.JSON(oerr.Status, gin.H{"error": oerr.Error})
 			return
 		}
-		c.JSON(http.StatusOK, list)
+		c.JSON(http.StatusOK, report)
+	}
+}
+
+func ReportApproval(svc service.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil || id < 1 {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		var reportPatch reporter_dtos.ReportPatch
+		if err := c.BindJSON(&reportPatch); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		report, oerr := svc.ReportApproval(c, reportPatch)
+		if oerr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": oerr.Error})
+			return
+		}
+		c.JSON(http.StatusOK, report)
 	}
 }
 

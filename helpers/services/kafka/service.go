@@ -81,7 +81,7 @@ func (r *KafkaReader) Close() error {
 func Shutdown() {
 	for _, writer := range writers {
 		if err := writer.Close(); err != nil {
-			log.Errorf("closing topic %s: %w", writer.writer.Topic, err)
+			log.Errorf("closing topic %s: %v", writer.writer.Topic, err)
 		}
 	}
 }

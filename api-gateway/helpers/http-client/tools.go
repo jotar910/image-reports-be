@@ -38,8 +38,12 @@ func ReadJSON[TValue any, TError fmt.Stringer](resp *http.Response) (*TValue, *d
 }
 
 func ExtractError[TError fmt.Stringer](resp *http.Response) *dtos.ErrorOutbound {
-	if errRes, err := readJSON[TError](resp); err == nil {
+	errRes, oerr := readJSON[TError](resp)
+	if oerr == nil {
 		return dtos.NewError(resp.StatusCode, (*errRes).String())
+	}
+	if resp == nil {
+		return oerr
 	}
 	buf := new(strings.Builder)
 	n, err := io.Copy(buf, resp.Body)
@@ -53,6 +57,9 @@ func ExtractError[TError fmt.Stringer](resp *http.Response) *dtos.ErrorOutbound 
 }
 
 func readJSON[T any](resp *http.Response) (*T, *dtos.ErrorOutbound) {
+	if resp == nil {
+		return nil, dtos.NewInternalError("empty response")
+	}
 	res := new(T)
 	decoder := json.NewDecoder(resp.Body)
 	if err := decoder.Decode(res); err != nil {

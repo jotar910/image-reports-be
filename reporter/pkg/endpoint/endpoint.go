@@ -25,7 +25,7 @@ func OnImageProcessedMessage(
 ) error {
 	var err error
 	if message.Err == nil {
-		if message.Going {
+		if message.Going == 1 {
 			_, err = svc.PatchStatus(message.ReportId, shared_models.ReportStatusEvaluating)
 
 		} else {

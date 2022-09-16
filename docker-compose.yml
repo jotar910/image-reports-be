@@ -120,7 +120,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - 8083:8083
+      - 8084:8084
     depends_on:
       processing_database:
         condition: service_healthy

@@ -45,8 +45,9 @@ func newProcessAlgorithm(reportId uint, imageId string) *processAlgorithm {
 
 func (pa *processAlgorithm) execute() {
 	m := kafka.NewImageProcessedMessageGoing(pa.reportId)
+	log.Debugf("Writing on going processing message to kafka")
 	if err := pa.w.Write(context.Background(), m); err != nil {
-		log.Errorf("could not write message on report created: %w", err)
+		log.Errorf("could not write message on report created: %v", err)
 	}
 
 	time.Sleep(time.Duration(randIntn(30)) * time.Second)
@@ -62,18 +63,18 @@ func (pa *processAlgorithm) execute() {
 }
 
 func (pa *processAlgorithm) onExecuteSuccess(grade int, categories []string) {
-	w := kafka.Writer(kafka.TopicImageProcessed)
+	log.Debugf("Writing completed processing message to kafka")
 	m := kafka.NewImageProcessedMessageCompleted(pa.reportId, pa.imageId, grade, categories)
-	if err := w.Write(context.Background(), m); err != nil {
-		log.Errorf("could not write message on report created: %w", err)
+	if err := pa.w.Write(context.Background(), m); err != nil {
+		log.Errorf("could not write message on report created: %v", err)
 	}
 }
 
 func (pa *processAlgorithm) onExecuteError(err error) {
-	w := kafka.Writer(kafka.TopicImageProcessed)
+	log.Debugf("Writing failed processing message to kafka")
 	m := kafka.NewImageProcessedMessageFailed(pa.reportId, pa.imageId, err)
-	if err := w.Write(context.Background(), m); err != nil {
-		log.Errorf("could not write message on report created: %w", err)
+	if err := pa.w.Write(context.Background(), m); err != nil {
+		log.Errorf("could not write message on report created: %v", err)
 	}
 }
 

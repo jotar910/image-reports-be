@@ -20,7 +20,8 @@ type Service interface {
 	ListReports(ctx context.Context, filters reporter_dtos.ListFilters) (*dtos.PageableList[reporter_dtos.ReportOutbound], *dtos.ErrorOutbound)
 	GetReport(ctx context.Context, id uint) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
 	GetFile(ctx context.Context, imageId string) (*http.Response, *dtos.ErrorOutbound)
-	CreateReports(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
+	CreateReport(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
+	ReportApproval(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound)
 }
 
 type service struct {

@@ -83,7 +83,7 @@ type ImageProcessedMessage struct {
 	Grade      int
 	Categories []string
 	Err        error
-	Going      bool
+	Going      int
 }
 
 func (m *ImageProcessedMessage) ToMessage() (Message, error) {
@@ -101,7 +101,7 @@ func NewEmptyImageProcessedMessage() *ImageProcessedMessage {
 func NewImageProcessedMessageGoing(reportId uint) *ImageProcessedMessage {
 	return &ImageProcessedMessage{
 		ReportId: reportId,
-		Going:    true,
+		Going:    1,
 	}
 }
 
@@ -111,7 +111,7 @@ func NewImageProcessedMessageCompleted(reportId uint, imageId string, grade int,
 		ImageId:    imageId,
 		Grade:      grade,
 		Categories: categories,
-		Going:      false,
+		Going:      0,
 	}
 }
 
@@ -120,7 +120,7 @@ func NewImageProcessedMessageFailed(reportId uint, imageId string, err error) *I
 		ReportId: reportId,
 		ImageId:  imageId,
 		Err:      err,
-		Going:    false,
+		Going:    0,
 	}
 }
 

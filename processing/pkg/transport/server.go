@@ -84,19 +84,19 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 func (s *serverConfiguration) initKafkaListeners(svc service.Service) {
 	go func() {
 		r := kafka.Reader(kafka.TopicImageProcessed, kafka.TopicImageProcessed)
-		req := kafka.NewEmptyImageProcessedMessage()
 		for {
+			req := kafka.NewEmptyImageProcessedMessage()
 			err := r.Read(context.Background(), req)
 			if err != nil {
 				if err == io.EOF {
 					break
 				}
-				log.Errorf("could not read message on image processed: %w", err)
+				log.Errorf("could not read message on image processed: %v", err)
 				continue
 			}
 			log.Debugf("received message about image processed: %+v", req)
 			if err := endpoint.AddEvaluation(svc, req); err != nil {
-				log.Errorf("could not add evaluation on image processed: %w", err)
+				log.Errorf("could not add evaluation on image processed: %v", err)
 				continue
 			}
 		}

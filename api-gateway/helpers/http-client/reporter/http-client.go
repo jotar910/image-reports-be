@@ -15,6 +15,7 @@ type HttpClient interface {
 	List(ctx context.Context, filters reporter_dtos.ListFilters) (*dtos.PageableList[reporter_dtos.Report], *dtos.ErrorOutbound)
 	Get(ctx context.Context, id uint) (*reporter_dtos.Report, *dtos.ErrorOutbound)
 	Create(ctx context.Context, data reporter_dtos.ReportCreationData) (*reporter_dtos.Report, *dtos.ErrorOutbound)
+	Patch(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.Report, *dtos.ErrorOutbound)
 	Approval() (*dtos.ErrorOutbound, *dtos.ErrorOutbound)
 }
 
@@ -50,6 +51,16 @@ func (client *httpClient) Get(ctx context.Context, id uint) (*reporter_dtos.Repo
 
 func (client *httpClient) Create(ctx context.Context, data reporter_dtos.ReportCreationData) (*reporter_dtos.Report, *dtos.ErrorOutbound) {
 	req, err := http.NewRequest("POST", tools.Url(client.config.Services.Reporter, "/v1/reports"), tools.ToJSON(data))
+	if err != nil {
+		return nil, dtos.NewInternalError(err.Error())
+	}
+	return tools.NewHttpRequest[reporter_dtos.Report](ctx, req).
+		ContentType(tools.MimeJSON).
+		Do(nil)
+}
+
+func (client *httpClient) Patch(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.Report, *dtos.ErrorOutbound) {
+	req, err := http.NewRequest("PATCH", tools.Url(client.config.Services.Reporter, "/v1/reports"), tools.ToJSON(patch))
 	if err != nil {
 		return nil, dtos.NewInternalError(err.Error())
 	}

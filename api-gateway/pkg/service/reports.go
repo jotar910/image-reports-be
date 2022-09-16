@@ -44,7 +44,7 @@ func (svc service) GetReport(ctx context.Context, id uint) (*reporter_dtos.Repor
 	return utils.Pointer(mappers.MapReport(*report, *user, *evaluations)), nil
 }
 
-func (svc service) CreateReports(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound) {
+func (svc service) CreateReport(ctx context.Context, form reporter_dtos.ReportCreation) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound) {
 	imageId := uuid.NewString()
 	report, oerr := svc.reporterClient.Create(ctx, mappers.MapReportCreationData(form, imageId))
 	if oerr != nil {
@@ -61,4 +61,20 @@ func (svc service) CreateReports(ctx context.Context, form reporter_dtos.ReportC
 		return nil, oerr
 	}
 	return utils.Pointer(mappers.MapReport(*report, *user, processing_dtos.Evaluation{})), nil
+}
+
+func (svc service) ReportApproval(ctx context.Context, patch reporter_dtos.ReportPatch) (*reporter_dtos.ReportOutbound, *dtos.ErrorOutbound) {
+	report, oerr := svc.reporterClient.Patch(ctx, patch)
+	if oerr != nil {
+		return nil, oerr
+	}
+	user, oerr := svc.userClient.GetUserById(ctx, report.ID)
+	if oerr != nil {
+		return nil, oerr
+	}
+	evaluations, oerr := svc.processingClient.GetEvaluation(ctx, report.ID)
+	if oerr != nil {
+		return nil, oerr
+	}
+	return utils.Pointer(mappers.MapReport(*report, *user, *evaluations)), nil
 }

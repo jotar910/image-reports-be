@@ -16,6 +16,9 @@ import (
 )
 
 func AddEvaluation(svc service.Service, message *kafka.ImageProcessedMessage) error {
+	if message.Err != nil || message.Going == 1 {
+		return nil
+	}
 	_, err := svc.Create(mappers.MapProcessedMessageToEvaluationDTO(message))
 	return err
 }

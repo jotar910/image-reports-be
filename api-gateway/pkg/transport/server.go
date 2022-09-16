@@ -12,6 +12,7 @@ import (
 	users_client "image-reports/api-gateway/helpers/http-client/users"
 	"image-reports/api-gateway/pkg/endpoint"
 	"image-reports/api-gateway/pkg/service"
+	"image-reports/shared/models"
 
 	"image-reports/helpers/services/auth"
 	log "image-reports/helpers/services/logger"
@@ -89,11 +90,11 @@ func (s *serverConfiguration) InitApiRoutes(svc service.Service) *gin.Engine {
 	)
 
 	reports.OPTIONS("/", server.CORSMiddleware())
-	reports.OPTIONS("/:id/", server.CORSMiddleware())
+	reports.OPTIONS("/:id", server.CORSMiddleware())
 	reports.GET("/", endpoint.ListReports(svc))
 	reports.GET("/:id/", endpoint.GetReport(svc))
 	reports.POST("/", endpoint.CreateReport(svc))
-	/* reports.PATCH("/:id", auth.AllowOnlyRole(models.AdminRole), endpoint.ReportApproval(svc)) */
+	reports.PATCH("/:id", auth.AllowOnlyRole(models.AdminRole), endpoint.ReportApproval(svc))
 
 	storage := resources.Group("/storage")
 	storage.Use(server.CORSMiddleware())
