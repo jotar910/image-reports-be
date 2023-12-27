@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: Image Reports API
+  version: 1.0.0
+paths:
+  /v1/auth/login:
+    post:
+      summary: User login on the application
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      role:
+                        type: string
+                  token:
+                    type: string
+  /v1/reports:
+    get:
+      summary: Returns a paginated list of reports
+      tags:
+        - Reports
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: count
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A paginated list of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReportItem'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalElements:
+                    type: integer
+                  numberOfElements:
+                    type: integer
+    
+    post:
+      summary: Creates a new report
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                callback:
+                  type: string
+                type:
+                  type: string
+                  enum: [file, url]
+                url:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Report created
+  /v1/reports/{id}:
+    get:
+      summary: Returns a single report for the given id
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportItem'
+    patch:
+      summary: Update report status
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvalStatus:
+                  type: string
+      responses:
+        '200':
+          description: Report status updated
+  /v1/storage/{id}:
+    get:
+      summary: Retrieve image for a report
+      tags:
+        - Storage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image data
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+components:
+  schemas:
+    ReportItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        user:
+          type: string
+        image:
+          type: string
+        status:
+          type: string
+        approval:
+          type: object
+          properties:
+            userId:
+              type: integer
+            status:
+              type: string
+            date:
+              type: integer
+        evaluation:
+          type: object
+          properties:
+            grade:
+              type: integer
+            categories:
+              type: array
+              items:
+                type: string
+        creationDate:
+          type: integer
+
