@@ -47,6 +47,21 @@ It's a valuable resource for developers looking to integrate with our API or und
 
 [Access the Full API Documentation here](./docs/api.yaml)
 
-## Architecture
+## Architecture Planning
 
 ![Architecture Diagram](./docs/diagram.png)
+
+### Architecture and Design
+The system is structured around a **Microservices Architecture** and adheres to **Hexagonal Architecture** principles for scalability, maintainability, and loose coupling. Services are designed to scale independently, facilitating efficient resource management.
+
+### Services
+* **Gateway**: Serves as the primary entry for all API requests, handling user authentication, authorization, and data aggregation.
+* **Realtime Service**: Utilizes Server-Sent Events (SSE) to push real-time updates to clients, ensuring immediate reflection of state changes.
+* **Storage Service**: Manages file storage and operations, acting as a bridge between the application and the file system.
+* **User Service**: Responsible for user account management, including data handling and operations related to user accounts.
+* **Processing Service**: Applies AI to assess and process reports, playing a key role in content analysis and moderation.
+* **Reporter Service**: Manages the entire lifecycle of reports from creation to data retrieval and status updates.
+
+### RESTful API
+The system's communication leverages RESTful principles, which standardize interactions between microservices and external clients, simplifying the data exchange process.
+
